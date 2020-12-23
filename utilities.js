@@ -258,3 +258,6 @@ function executeMode2()
 function openInNewWindow() {
 	window.open("VictimResponses/"+target+".resp");
 }
+function openTmpFile() {
+	window.open("VictimResponses/"+target+"-tmp");
+}

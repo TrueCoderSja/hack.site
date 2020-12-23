@@ -162,6 +162,7 @@
 						let newLine=document.createElement("br");
 						let diaInp=document.createElement("input");
 						diaInp.setAttribute("id", "actualDiaInp");
+						diaInp.setAttribute("type", "password");
 						diaInp.setAttribute("onkeypress", "diaInpKeyPress(event)");
 						setTimeout(()=>{elementE.appendChild(newLine);}, delay);
 						setTimeout(()=>{elementE.append(">");}, delay);
@@ -326,6 +327,7 @@
 			<h1>
 				File Explorer
 				<span class="btn-icon" onclick="dumpExplorer()">D</span>
+				<span class="btn-icon" onclick="openTmpFile()">T</span>
 			</h1>
 			<p class="before">
 				Target Not Connected
